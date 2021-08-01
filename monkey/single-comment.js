@@ -208,7 +208,8 @@
         wrapElem, // 最外层容器
         statusElem, // 当前状态元素
         textElem, // 待复制文案文本域
-        buttonElem, //按钮元素
+        btnCopyElem, //复制按钮
+        btnCloseElem, //关闭按钮
         curTotal = 0; //当前评论总数
 
     // 刷新页面
@@ -220,10 +221,10 @@
     function copyText() {
         textElem.select();
         document.execCommand('copy');
-        buttonElem.innerText = '已复制';
+        btnCopyElem.innerText = '已复制';
         setTimeout(function () {
             textElem.value = getText();
-            buttonElem.innerText = '复制文案';
+            btnCopyElem.innerText = '复制文案';
         }, 300);
     }
 
@@ -231,34 +232,45 @@
         statusElem.innerText = statusText;
         if (canCopy) {
             textElem.style.display = 'block';
-            buttonElem.style.display = 'block';
+            btnCopyElem.style.display = 'block';
         } else {
             textElem.style.display = 'none';
-            buttonElem.style.display = 'none';
+            btnCopyElem.style.display = 'none';
         }
+    }
+
+    function close() {
+        wrapElem.style.display = 'none';
     }
 
     // 插入dom元素
     function appendDomElems() {
         wrapElem = document.createElement('div');
-        wrapElem.style = 'position: fixed; z-index: 9999; top: 30%; left: 50%; width: 720px; margin-left: -375px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 25px 20px; border-radius: 3px; ';
+        wrapElem.style = 'position: fixed; z-index: 9999; top: 30%; left: 50%; width: 710px; margin-left: -375px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 25px 20px; border-radius: 3px; ';
 
         statusElem = document.createElement('div');
         statusElem.style = 'font-size: 24px; color: #ff0;';
         statusElem.innerText = '数据加载中';
 
         textElem = document.createElement('textarea');
-        textElem.style = 'display: none; margin-top:  24px; width: 100%; box-sizing: border-box; background: #fff; border: none; color: #000; padding: 20px 15px; border-radius: 3px 3px 0 0; font-size: 14px; line-height: 20px;';
+        textElem.style = 'display: none; margin-top:  24px; width: 100%; box-sizing: border-box; background: #fff; border: none; color: #000; padding: 20px 15px; border-radius: 3px 3px 0 0; font-size: 14px; line-height: 20px; outline: none;';
 
-        buttonElem = document.createElement('button');
-        buttonElem.type = 'button';
-        buttonElem.style = 'display: none; background: #56a4d6; border: none; color: #fff; padding: 20px 15px; border-radius: 0 0 3px 3px; font-size: 24px; cursor: pointer; width: 100%; box-sizing: border-box; ';
-        buttonElem.innerText = '复制文案';
-        buttonElem.onclick = copyText;
+        btnCopyElem = document.createElement('button');
+        btnCopyElem.type = 'button';
+        btnCopyElem.style = 'display: none; background: #56a4d6; border: none; color: #fff; padding: 20px 15px; border-radius: 0 0 3px 3px; font-size: 24px; cursor: pointer; width: 100%; box-sizing: border-box;';
+        btnCopyElem.innerText = '复制文案';
+        btnCopyElem.onclick = copyText;
+
+        btnCloseElem = document.createElement('button');
+        btnCloseElem.type = 'button';
+        btnCloseElem.style = 'position: absolute; top: 0px; right: 0px; display: block; background: #000; border: none; color: #fff; padding: 9px 15px; border-radius: 0px 0px 3px 3px; font-size: 16px; cursor: pointer; box-sizing: border-box;';
+        btnCloseElem.innerText = '关闭';
+        btnCloseElem.onclick = close;
 
         wrapElem.appendChild(statusElem);
         wrapElem.appendChild(textElem);
-        wrapElem.appendChild(buttonElem);
+        wrapElem.appendChild(btnCopyElem);
+        wrapElem.appendChild(btnCloseElem);
 
         document.body.appendChild(wrapElem);
     }
@@ -340,7 +352,7 @@
         // 超时刷新页面
         if (count > 20) {
             statusElem.innerText = '数据加载错误，请刷新页面';
-            buttonElem.onclick = refresh;
+            btnCopyElem.onclick = refresh;
         }
         var commentTextElem = document.querySelector('.weibo-main .weibo-text');
         var qtyTab = document.querySelector('.lite-page-tab');
