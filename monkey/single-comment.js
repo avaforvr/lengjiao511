@@ -13,7 +13,7 @@
     'use strict';
 
     // 评论前缀
-    var PREFIX = '';// [置顶][来hui][勿hui][沪哲]
+    var PREFIX = '[置顶]';// [置顶][来hui][勿hui][沪哲]
 
     var MY_NAME = '努力修行的棱角';
 
@@ -249,7 +249,7 @@
     ];
 
     // 根据评论正文关键字获取备选文案列表
-    function getTextList(text) {
+    function getTextList (text) {
         for (var i = 0; i < tagMap.length; i++) {
             var item = tagMap[i];
             if (text.indexOf(item.key) !== -1 && item.list.length > 0) {
@@ -263,43 +263,36 @@
         wrapElem, // 最外层容器
         statusElem, // 当前状态元素
         textElem, // 待复制文案文本域
+        formInputElem, //评论输入框
+        formSubmitElem, //评论提交按钮
         btnCopyElem, //复制按钮
         btnCloseElem, //关闭按钮
         curTotal = 0; //当前评论总数
 
     // 刷新页面
-    function refresh() {
+    function refresh () {
         window.location.refresh();
     }
 
-    // 复制文案
-    function copyText() {
-        textElem.select();
-        document.execCommand('copy');
-        btnCopyElem.innerText = '已复制';
-        setTimeout(function () {
-            textElem.value = getText();
-            btnCopyElem.innerText = '复制文案';
-        }, 300);
-    }
-
-    function showStatus(statusText, canCopy) {
+    // 更新状态
+    function showStatus (statusText, canCopy) {
         statusElem.innerText = statusText;
-        if (canCopy) {
-            textElem.style.display = 'block';
-            btnCopyElem.style.display = 'block';
-        } else {
-            textElem.style.display = 'none';
-            btnCopyElem.style.display = 'none';
-        }
+        btnCopyElem.style.display = canCopy ? 'block' : 'none';
     }
 
-    function close() {
+    function hide () {
         wrapElem.style.display = 'none';
     }
 
+    // 自动填写评论
+    function fillText () {
+        var text = getText();
+        textElem.value = text;
+        formInputElem.value = text;
+    }
+
     // 插入dom元素
-    function appendDomElems() {
+    function appendDomElems () {
         wrapElem = document.createElement('div');
         wrapElem.style = 'position: fixed; z-index: 9999; top: 30%; left: 50%; width: 710px; margin-left: -375px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 25px 20px; border-radius: 3px; ';
 
@@ -307,23 +300,19 @@
         statusElem.style = 'font-size: 24px; color: #ff0;';
         statusElem.innerText = '数据加载中';
 
-        textElem = document.createElement('textarea');
-        textElem.style = 'display: none; margin-top:  24px; width: 100%; box-sizing: border-box; background: #fff; border: none; color: #000; padding: 20px 15px; border-radius: 3px 3px 0 0; font-size: 14px; line-height: 20px; outline: none;';
-
         btnCopyElem = document.createElement('button');
         btnCopyElem.type = 'button';
         btnCopyElem.style = 'display: none; background: #56a4d6; border: none; color: #fff; padding: 20px 15px; border-radius: 0 0 3px 3px; font-size: 24px; cursor: pointer; width: 100%; box-sizing: border-box;';
-        btnCopyElem.innerText = '复制文案';
-        btnCopyElem.onclick = copyText;
+        btnCopyElem.innerText = '切换文案';
+        btnCopyElem.onclick = fillText;
 
         btnCloseElem = document.createElement('button');
         btnCloseElem.type = 'button';
         btnCloseElem.style = 'position: absolute; top: 0px; right: 0px; display: block; background: #000; border: none; color: #fff; padding: 9px 15px; border-radius: 0px 0px 3px 3px; font-size: 16px; cursor: pointer; box-sizing: border-box;';
         btnCloseElem.innerText = '关闭';
-        btnCloseElem.onclick = close;
+        btnCloseElem.onclick = hide;
 
         wrapElem.appendChild(statusElem);
-        wrapElem.appendChild(textElem);
         wrapElem.appendChild(btnCopyElem);
         wrapElem.appendChild(btnCloseElem);
 
@@ -331,7 +320,7 @@
     }
 
     // 获取随机评论文案
-    function getText() {
+    function getText () {
         var randomText = textList[Math.floor(Math.random() * textList.length)];
 
         var randowLetters = '';
@@ -344,7 +333,7 @@
     }
 
     // 检查是否已经评论过
-    function checkDone() {
+    function checkDone () {
         var comments = document.querySelectorAll('.comment-content>div');
         for (var i = 0; i < comments.length; i++) {
             var nameElem = comments[i].querySelector('.m-text-cut');
@@ -356,11 +345,14 @@
     }
 
     // 检查是不是自己的帖子
-    function checkSelf() {
-        return document.querySelector('.weibo-top .m-text-cut').innerText.trim() === MY_NAME;
+    function checkSelf () {
+        return document.querySelector('.weibo-top .m-text-cut')
+            .innerText
+            .trim() === MY_NAME;
     }
 
-    function afterSubmit() {
+    // 提交后更新状态
+    function afterSubmit () {
         curTotal = curTotal + 1;
         var arr = [curTotal >= 30 ? '评论数已满30' : ('当前评论数：' + curTotal)];
         if (checkDone()) {
@@ -369,8 +361,22 @@
         }
     }
 
+    // 评论输入文本域，keyup后
+    function bindKeyupEvent () {
+        formInputElem.addEventListener('keyup', function () {
+            setTimeout(function () {
+                if (formSubmitElem.className.indexOf('disable') === -1) {
+                    // formSubmitElem.click();
+                    console.log('formSubmitElem click');
+                } else {
+                    console.log('formSubmitElem disable');
+                }
+            }, 200)
+        });
+    }
+
     // 初始化
-    function init(commentTextElem, qtyTab) {
+    function init (commentTextElem, qtyTab) {
         var commentText = commentTextElem.innerText.trim();
 
         textList = getTextList(commentText);
@@ -388,12 +394,21 @@
         }
 
         if (!hasDone && !isSelf) {
-            showStatus(arr.join('，'), true);
-            textElem.value = getText();
+            // 点击“发表评论”，显示输入框和提交按钮
+            document.querySelector('.m-text-cut.focus')
+                .click();
+            setTimeout(function () {
+                var form = document.querySelector('.composer-mini-wrap');
+                formInputElem = form.querySelector('textarea');
+                formSubmitElem = form.querySelector('.btn-send');
+                bindKeyupEvent();
+                fillText();
+                showStatus(arr.join('，'), true);
+            }, 200);
 
             // 监测评论列表
             var targetNode = document.querySelector('.comment-content');
-            var observerOptions = {childList: true};
+            var observerOptions = { childList: true };
             var observer = new MutationObserver(afterSubmit);
             observer.observe(targetNode, observerOptions);
 
@@ -403,7 +418,7 @@
     }
 
     // 检测文档是否加载完成
-    function checkLoad(count) {
+    function checkLoad (count) {
         // 超时刷新页面
         if (count > 20) {
             statusElem.innerText = '数据加载错误，请刷新页面';
