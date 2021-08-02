@@ -15,12 +15,17 @@
     // 评论前缀
     var PREFIX = '沪哲|';// 置顶| 来hui| 勿hui| 沪哲|
 
+    // 微博名
     var MY_NAME = '努力修行的棱角';
+
+    // 是否自动填写
+    var IS_AUTO_FILL = true;
 
     // 为了避免文案重复，每次生成文案前面加一个随机汉字组合，文案越长，重复率越低
     var RANDOM_LETTERS = '张哲瀚和家人朋友们健康快乐事业顺利祝我抢到前排演唱会门票早日实现财务自由';
     // 汉字组合的长度，数值越大，重复率越低
     var RANDOM_LENGTH = 3;
+    // 随机字符与文案间的分隔符
     var RANDOM_SEPERATE = '|';
 
     // 可口可乐
