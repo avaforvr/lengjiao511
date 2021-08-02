@@ -13,7 +13,7 @@
     'use strict';
 
     // 评论前缀
-    var PREFIX = '[置顶]';// [置顶][来hui][勿hui][沪哲]
+    var PREFIX = '沪哲|';// 置顶| 来hui| 勿hui| 沪哲|
 
     var MY_NAME = '努力修行的棱角';
 
@@ -21,7 +21,7 @@
     var RANDOM_LETTERS = '张哲瀚和家人朋友们健康快乐事业顺利祝我抢到前排演唱会门票早日实现财务自由';
     // 汉字组合的长度，数值越大，重复率越低
     var RANDOM_LENGTH = 3;
-    var RANDOM_SEPERATE = '，';
+    var RANDOM_SEPERATE = '|';
 
     // 可口可乐
     var cola = [
@@ -262,7 +262,6 @@
     var textList, // 备选文案列表
         wrapElem, // 最外层容器
         statusElem, // 当前状态元素
-        textElem, // 待复制文案文本域
         formInputElem, //评论输入框
         formSubmitElem, //评论提交按钮
         btnCopyElem, //复制按钮
@@ -287,7 +286,6 @@
     // 自动填写评论
     function fillText () {
         var text = getText();
-        textElem.value = text;
         formInputElem.value = text;
     }
 
@@ -302,7 +300,7 @@
 
         btnCopyElem = document.createElement('button');
         btnCopyElem.type = 'button';
-        btnCopyElem.style = 'display: none; background: #56a4d6; border: none; color: #fff; padding: 20px 15px; border-radius: 0 0 3px 3px; font-size: 24px; cursor: pointer; width: 100%; box-sizing: border-box;';
+        btnCopyElem.style = 'display: none; margin-top: 24px; background: #56a4d6; border: none; color: #fff; padding: 20px 15px; border-radius: 0 0 3px 3px; font-size: 24px; cursor: pointer; width: 100%; box-sizing: border-box;';
         btnCopyElem.innerText = '切换文案';
         btnCopyElem.onclick = fillText;
 
@@ -367,7 +365,7 @@
             setTimeout(function () {
                 if (formSubmitElem.className.indexOf('disable') === -1) {
                     // formSubmitElem.click();
-                    console.log('formSubmitElem click');
+                    cosole.log('to click')
                 } else {
                     console.log('formSubmitElem disable');
                 }
