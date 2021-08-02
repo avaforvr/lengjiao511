@@ -250,9 +250,9 @@
 
     // 根据评论正文关键字获取备选文案列表
     function getTextList (text) {
-        for (var i = 0; i < tagMap.length; i++) {
+        for (var i = 0; i < tagMap.length; i ++) {
             var item = tagMap[i];
-            if (text.indexOf(item.key) !== -1 && item.list.length > 0) {
+            if (text.indexOf(item.key) !== - 1 && item.list.length > 0) {
                 return item.list;
             }
         }
@@ -266,17 +266,19 @@
         formSubmitElem, //评论提交按钮
         btnCopyElem, //复制按钮
         btnCloseElem, //关闭按钮
-        curTotal = 0; //当前评论总数
+        curTotal = - 1, //当前评论总数
+        commentListElem, // 评论列表容器
+        loadingElem; //loading元素
 
     // 刷新页面
     function refresh () {
-        window.location.refresh();
+        window.location.reload();
     }
 
     // 更新状态
-    function showStatus (statusText, canCopy) {
+    function showStatus (statusText, showBtn) {
         statusElem.innerText = statusText;
-        btnCopyElem.style.display = canCopy ? 'block' : 'none';
+        btnCopyElem.style.display = showBtn ? 'block' : 'none';
     }
 
     function hide () {
@@ -285,8 +287,17 @@
 
     // 自动填写评论
     function fillText () {
-        var text = getText();
-        formInputElem.value = text;
+        formInputElem.value = getText();
+        var evt = new InputEvent('input', {
+            inputType: 'insertText',
+            data: 'trigger',
+            dataTransfer: null,
+            isComposing: false
+        });
+        formInputElem.dispatchEvent(evt);
+        setTimeout(function () {
+            formSubmitElem.click();
+        }, 200);
     }
 
     // 插入dom元素
@@ -323,7 +334,7 @@
 
         var randowLetters = '';
         var len = RANDOM_LETTERS.length;
-        for (var i = 0; i < RANDOM_LENGTH; i++) {
+        for (var i = 0; i < RANDOM_LENGTH; i ++) {
             randowLetters += RANDOM_LETTERS.charAt(Math.floor(Math.random() * len));
         }
 
@@ -333,8 +344,10 @@
     // 检查是否已经评论过
     function checkDone () {
         var comments = document.querySelectorAll('.comment-content>div');
-        for (var i = 0; i < comments.length; i++) {
+        console.log('comments', comments)
+        for (var i = 0; i < comments.length; i ++) {
             var nameElem = comments[i].querySelector('.m-text-cut');
+            console.log(nameElem && nameElem.innerText.trim())
             if (nameElem && nameElem.innerText.trim() === MY_NAME) {
                 return true;
             }
@@ -344,9 +357,7 @@
 
     // 检查是不是自己的帖子
     function checkSelf () {
-        return document.querySelector('.weibo-top .m-text-cut')
-            .innerText
-            .trim() === MY_NAME;
+        return document.querySelector('.weibo-top .m-text-cut').innerText.trim() === MY_NAME;
     }
 
     // 提交后更新状态
@@ -359,29 +370,13 @@
         }
     }
 
-    // 评论输入文本域，keyup后
-    function bindKeyupEvent () {
-        formInputElem.addEventListener('keyup', function () {
-            setTimeout(function () {
-                if (formSubmitElem.className.indexOf('disable') === -1) {
-                    // formSubmitElem.click();
-                    cosole.log('to click')
-                } else {
-                    console.log('formSubmitElem disable');
-                }
-            }, 200)
-        });
-    }
-
     // 初始化
     function init (commentTextElem, qtyTab) {
-        var commentText = commentTextElem.innerText.trim();
+        // 获取备选文案列表和当前评论总数
+        textList = getTextList(commentTextElem.innerText.trim());
 
-        textList = getTextList(commentText);
-
-        curTotal = parseInt(qtyTab.children[1].children[1].innerText.trim());
-        var isSelf = checkSelf();
-        var hasDone = checkDone();
+        var isSelf = checkSelf(); // 是不是自己的帖子
+        var hasDone = checkDone(); // 是不是已经评论了
 
         var arr = [curTotal >= 30 ? '评论数已满30' : ('当前评论数：' + curTotal)];
         if (hasDone) {
@@ -391,7 +386,11 @@
             arr.push('自己的帖子');
         }
 
+        console.log('hasDone', hasDone);
+        console.log('isSelf', isSelf);
         if (!hasDone && !isSelf) {
+
+            /*
             // 点击“发表评论”，显示输入框和提交按钮
             document.querySelector('.m-text-cut.focus')
                 .click();
@@ -399,7 +398,6 @@
                 var form = document.querySelector('.composer-mini-wrap');
                 formInputElem = form.querySelector('textarea');
                 formSubmitElem = form.querySelector('.btn-send');
-                bindKeyupEvent();
                 fillText();
                 showStatus(arr.join('，'), true);
             }, 200);
@@ -409,7 +407,7 @@
             var observerOptions = { childList: true };
             var observer = new MutationObserver(afterSubmit);
             observer.observe(targetNode, observerOptions);
-
+*/
         } else {
             showStatus(arr.join('，'), false);
         }
@@ -417,26 +415,70 @@
 
     // 检测文档是否加载完成
     function checkLoad (count) {
-        // 超时刷新页面
-        if (count > 20) {
-            statusElem.innerText = '数据加载错误，请刷新页面';
-            btnCopyElem.onclick = refresh;
+        // to bottom
+        // wait
+        // has loading
+
+        var pageWrap = document.querySelector('.lite-page-wrap');
+        if (pageWrap) {
+            // 滚动到页面底部，加载所有评论
+            window.scrollTo(0, pageWrap.offsetHeight);
+            setTimeout(function () {
+
+            }, 200)
         }
+
+
+
+
+
+
+
+
+
+
+
+
+        // 加载时间超出20秒，提示刷新页面
+        if (count > 100) {
+            showStatus('数据加载错误，请刷新页面', true)
+            btnCopyElem.onclick = refresh;
+            btnCopyElem.innerText = '刷新页面';
+        }
+
         var commentTextElem = document.querySelector('.weibo-main .weibo-text');
         var qtyTab = document.querySelector('.lite-page-tab');
-        var loading = document.querySelector('.comment-content .m-tips');
-        if (commentTextElem && qtyTab && loading && loading.style.display === 'none') {
-            // 元素加载完成
-            init(commentTextElem, qtyTab);
-        } else {
-            // 等待加载
-            setTimeout(function () {
-                checkLoad(count + 1)
-            }, 200);
+        commentListElem = document.querySelector('.comment-content');
+
+        if (commentTextElem && qtyTab && commentListElem) {
+            if (curTotal === - 1) {
+                curTotal = parseInt(qtyTab.children[1].children[1].innerText.trim());
+            }
+
+            const commentListLength = commentListElem.children.length + commentListElem.querySelectorAll('.cmt-sub-txt>p').length - 1;
+            console.log('commentListLength', commentListLength, curTotal)
+            if (commentListLength === curTotal) {
+                // 数据加载完成
+                init(commentTextElem, qtyTab);
+                return;
+            }
         }
+
+        // 等待加载
+        setTimeout(function () {
+            var pageWrap = document.querySelector('.lite-page-wrap');
+            console.log('pageWrap', pageWrap);
+            if (pageWrap) {
+                console.log('pageWrap.offsetHeight', pageWrap.offsetHeight);
+                // 滚动到页面底部，加载所有评论
+                window.scrollTo(0, pageWrap.offsetHeight);
+            }
+            checkLoad(count + 1);
+        }, 200);
     }
 
+    // 插入dom元素
     appendDomElems();
-    checkLoad();
-
+    // 检查是否加载完成
+    checkLoad(1);
 })();
