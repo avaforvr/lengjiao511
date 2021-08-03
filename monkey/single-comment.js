@@ -4,7 +4,7 @@
 // @version      0.1
 // @description  根据weibo帖子带的tag生成相应的评论文案
 // @author       努力修行的棱角
-// @match        https://m.weibo.cn/*
+// @match        https://m.weibo.cn/status/*
 // @include      /^https:\/\/weibo\.com\/\d{10}\/[0-9a-zA-Z]{9}/
 // @grant        none
 // ==/UserScript==
@@ -18,10 +18,14 @@
     // 微博名
     var MY_NAME = '努力修行的棱角';
 
+    // 只检查评论数是否捞满
+    var ONLY_CHECK_QTY = false;
     // 是否自动填写
     var IS_AUTO_FILL = true;
     // 是否自动提交评论
     var IS_AUTO_SUBMIT = true;
+    // 一个帖子目标是多少条评论，攒积分30即可，刷超话经验值无上限
+    var TARGET = 30;
 
     // 为了避免文案重复，每次生成文案前面加一个随机汉字组合，文案越长，重复率越低
     var RANDOM_LETTERS = '张哲瀚和家人朋友们健康快乐事业顺利祝我抢到前排演唱会门票早日实现财务自由';
@@ -51,7 +55,7 @@
         '呲～拧开的不是可乐，是这个夏天的快乐。 咕咚～喝下的不是碳酸，是这个夏天的凉爽！哲一夏，瀚永爱，带上可口可乐一起，与张哲瀚@张哲瀚疯子 共饮[牛轰轰拥抱]@可口可乐',
         '和张哲瀚@张哲瀚疯子 一起吃美食，配冰可口可乐@可口可乐，畅享美味，快乐加倍！恭喜张哲瀚成为可口可乐品牌大使！ ​​​',
         '恭喜青年演员张哲瀚@张哲瀚疯子 成为可口可乐品牌大使！炎炎夏日一起来杯冰爽可口吧！@可口可乐',
-        '欢迎可口可乐品牌大使@张哲瀚疯子 加入饭局，以后一起快乐干饭美味加倍吧@可口可乐 ⛽️恭喜张哲瀚成为可口可乐品牌大使！'
+        '欢迎可口可乐品牌大使@张哲瀚疯子 加入饭局，以后一起快乐干饭美味加倍吧@可口可乐 ⛽️恭喜张哲瀚成为可口可乐品牌大使！',
     ];
 
     // 吕
@@ -221,45 +225,45 @@
         {
             key: '每日一善',
             list: daily,
-            label: '每日一善'
+            label: '每日一善',
         },
         {
             key: '#和张哲瀚吃饭喝可口可乐#',
             list: cola,
-            label: '可口可乐'
+            label: '可口可乐',
         },
         {
             key: '#吕御发代言人张哲瀚#',
             list: ryo,
-            label: '吕'
+            label: '吕',
         },
         {
             key: '#张哲瀚喊你吃夜宵百力滋# ',
             list: bailizi,
-            label: '百力滋'
+            label: '百力滋',
         },
         {
             key: '#张哲瀚梦幻新诛仙#',
             list: zhuxian,
-            label: '诛仙'
+            label: '诛仙',
         },
         {
             key: '#张哲瀚美宝莲纽约品牌代言人#',
             list: meibaolian,
-            label: '美宝莲'
+            label: '美宝莲',
         },
         {
             key: '#张哲瀚TASAKI塔思琦品牌大使#',
             list: tasaki,
-            label: 'TASAKI'
+            label: 'TASAKI',
         },
     ];
 
     // 根据评论正文关键字获取备选文案列表
-    function getTextList(text) {
-        for (var i = 0; i < tagMap.length; i++) {
+    function getTextList (text) {
+        for (var i = 0; i < tagMap.length; i ++) {
             var item = tagMap[i];
-            if (text.indexOf(item.key) !== -1 && item.list.length > 0) {
+            if (text.indexOf(item.key) !== - 1 && item.list.length > 0) {
                 return item.list;
             }
         }
@@ -273,35 +277,37 @@
         formSubmitElem, //评论提交按钮
         btnCopyElem, //复制按钮
         btnCloseElem, //关闭按钮
-        curTotal = -1, //当前评论总数
+        curTotal = - 1, //当前评论总数
         loadingElem, //loading元素
-        pageWrapElem; //页面容器
+        pageWrapElem, //页面容器
+        qtyTabElem, //显示点赞评总数的工具栏元素
+        isMobile = window.location.host === 'm.weibo.cn'; //是移动端链接还是pc端链接
 
     // 刷新页面
-    function refresh() {
+    function refresh () {
         window.location.reload();
     }
 
     // 更新状态
-    function showStatus(statusText, showBtn) {
+    function showStatus (statusText, showBtn) {
         statusElem.innerText = statusText;
         if (btnCopyElem) {
             btnCopyElem.style.display = showBtn ? 'block' : 'none';
         }
     }
 
-    function hide() {
+    function hide () {
         wrapElem.style.display = 'none';
     }
 
     // 自动填写评论
-    function fillText() {
+    function fillText () {
         formInputElem.value = getText();
         var evt = new InputEvent('input', {
             inputType: 'insertText',
             data: 'trigger',
             dataTransfer: null,
-            isComposing: false
+            isComposing: false,
         });
         formInputElem.dispatchEvent(evt);
         if (IS_AUTO_SUBMIT) {
@@ -312,7 +318,7 @@
     }
 
     // 插入dom元素
-    function appendDomElems() {
+    function appendDomElems () {
         wrapElem = document.createElement('div');
         wrapElem.style = 'position: fixed; z-index: 9999; top: 30%; left: 50%; width: 710px; margin-left: -375px; text-align: center; background: rgba(0, 0, 0, 0.8); color: #fff; padding: 25px 20px; border-radius: 3px; ';
 
@@ -341,25 +347,34 @@
     }
 
     // 获取随机评论文案
-    function getText() {
+    function getText () {
         var randomText = textList[Math.floor(Math.random() * textList.length)];
 
         var randowLetters = '';
         var len = RANDOM_LETTERS.length;
-        for (var i = 0; i < RANDOM_LENGTH; i++) {
+        for (var i = 0; i < RANDOM_LENGTH; i ++) {
             randowLetters += RANDOM_LETTERS.charAt(Math.floor(Math.random() * len));
         }
 
         return PREFIX + randowLetters + RANDOM_SEPERATE + randomText;
     }
 
+    // 获取评论总数
+    function getQty () {
+        if (!qtyTabElem) {
+            qtyTabElem = document.querySelector('.lite-page-tab');
+        }
+        if (!qtyTabElem) {
+            return - 1;
+        }
+        return parseInt(qtyTabElem.children[1].children[1].innerText.trim());
+    }
+
     // 检查是否已经评论过
-    function checkDone() {
+    function checkDone () {
         var comments = document.querySelectorAll('.comment-content>div');
-        console.log('comments', comments)
-        for (var i = 0; i < comments.length; i++) {
+        for (var i = 0; i < comments.length; i ++) {
             var nameElem = comments[i].querySelector('.m-text-cut');
-            console.log(nameElem && nameElem.innerText.trim())
             if (nameElem && nameElem.innerText.trim() === MY_NAME) {
                 return true;
             }
@@ -368,14 +383,16 @@
     }
 
     // 检查是不是自己的帖子
-    function checkSelf() {
-        return document.querySelector('.weibo-top .m-text-cut').innerText.trim() === MY_NAME;
+    function checkSelf () {
+        return document.querySelector('.weibo-top .m-text-cut')
+            .innerText
+            .trim() === MY_NAME;
     }
 
     // 提交后更新状态
-    function afterSubmit() {
+    function afterSubmit () {
         curTotal = curTotal + 1;
-        var arr = [curTotal >= 30 ? '评论数已满30' : ('当前评论数：' + curTotal)];
+        var arr = [curTotal >= TARGET ? '评论数已满' + TARGET : ('当前评论数：' + curTotal)];
         if (checkDone()) {
             arr.push('已评');
             showStatus(arr.join('，'), false);
@@ -383,13 +400,14 @@
     }
 
     // 初始化
-    function init() {
+    function init () {
+        // 获取备选文案列表
         var commentTextElem = document.querySelector('.weibo-main .weibo-text');
-        var qtyTab = document.querySelector('.lite-page-tab');
+        qtyTabElem = document.querySelector('.lite-page-tab');
 
         // 获取备选文案列表和当前评论总数
         textList = getTextList(commentTextElem.innerText.trim());
-        curTotal = parseInt(qtyTab.children[1].children[1].innerText.trim());
+        curTotal = parseInt(qtyTabElem.children[1].children[1].innerText.trim());
 
         var isSelf = checkSelf(); // 是不是自己的帖子
         var hasDone = checkDone(); // 是不是已经评论了
@@ -403,21 +421,21 @@
         }
 
         if (!hasDone && !isSelf) {
-            // 点击“发表评论”，显示输入框和提交按钮
-            document.querySelector('.m-text-cut.focus').click();
-            setTimeout(function () {
-                var form = document.querySelector('.composer-mini-wrap');
-                formInputElem = form.querySelector('textarea');
-                formSubmitElem = form.querySelector('.btn-send');
-                if (IS_AUTO_FILL) {
+            // 点击”发表评论“，显示输入框和提交按钮
+            if (IS_AUTO_FILL) {
+                document.querySelector('.m-text-cut.focus').click();
+                setTimeout(function () {
+                    var form = document.querySelector('.composer-mini-wrap');
+                    formInputElem = form.querySelector('textarea');
+                    formSubmitElem = form.querySelector('.btn-send');
                     fillText();
-                }
-                showStatus(arr.join('，'), true);
-            }, 200);
+                    showStatus(arr.join('，'), true);
+                }, 200);
+            }
 
             // 监测评论列表
             var targetNode = document.querySelector('.comment-content');
-            var observerOptions = {childList: true};
+            var observerOptions = { childList: true };
             var observer = new MutationObserver(afterSubmit);
             observer.observe(targetNode, observerOptions);
         } else {
@@ -426,10 +444,10 @@
     }
 
     // 检测文档是否加载完成
-    function checkLoad(count) {
+    function checkLoad (count) {
         // 加载时间超出20秒，提示刷新页面
         if (count > 100) {
-            showStatus('数据加载错误，请刷新页面', true)
+            showStatus('数据加载错误，请刷新页面', true);
             btnCopyElem.onclick = refresh;
             btnCopyElem.innerText = '刷新页面';
         }
@@ -440,27 +458,40 @@
             }
 
             if (pageWrapElem) {
-                // 滚动到页面底部，加载所有评论
-                window.scrollTo(0, pageWrapElem.offsetHeight);
-                setTimeout(function () {
-                    if (!loadingElem) {
-                        loadingElem = pageWrapElem.querySelector('.comment-content .m-tips');
-                    }
-                    if (!loadingElem || loadingElem.style.display === 'block') {
+                if (ONLY_CHECK_QTY) {
+                    curTotal = getQty();
+                    if (curTotal === - 1) {
                         checkLoad(count + 1);
                     } else {
-                        // 数据加载完成
-                        init();
+                        var text = curTotal >= TARGET ? '已满:' + curTotal : curTotal
+                        showStatus(text, false);
                     }
-                }, 200)
+                } else {
+                    // 滚动到页面底部，加载所有评论
+                    window.scrollTo(0, pageWrapElem.offsetHeight);
+                    setTimeout(function () {
+                        if (!loadingElem) {
+                            loadingElem = pageWrapElem.querySelector('.comment-content .m-tips');
+                        }
+                        if (!loadingElem || loadingElem.style.display === 'block') {
+                            checkLoad(count + 1);
+                        } else {
+                            // 数据加载完成，页面滚回顶部
+                            window.scrollTo(0, 0);
+                            init();
+                        }
+                    }, 200);
+                }
             } else {
                 checkLoad(count + 1);
             }
         }, 200);
     }
 
-    // 插入dom元素
-    appendDomElems();
-    // 检查是否加载完成
-    checkLoad(1);
+    if (isMobile) {
+        // 插入dom元素
+        appendDomElems();
+        // 检查是否加载完成
+        checkLoad(1);
+    }
 })();
