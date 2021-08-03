@@ -494,4 +494,16 @@
         // 检查是否加载完成
         checkLoad(1);
     }
+
+    // 复制
+    // function copyText () {
+    //     textElem.select();
+    //     document.execCommand('copy');
+    //     btnCopyElem.innerText = '已复制';
+    //     fillText();
+    //     setTimeout(function () {
+    //         textElem.value = getText();
+    //         btnCopyElem.innerText = '复制文案';
+    //     }, 300);
+    // }
 })();
