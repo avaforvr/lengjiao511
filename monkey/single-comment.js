@@ -30,6 +30,9 @@
     // 随机字符与文案间的分隔符
     var RANDOM_SEPERATE = '|';
 
+    // 自动捞评最长持续几分钟，超出这个时间停止自动填写
+    var AUTO_CONTINUATION = 3;
+
     // 配置浮动元素背景色，按照自己的喜好定制颜色
     var COLORS = {
         todo: '#007bff', //未完成或未达成
@@ -510,7 +513,7 @@
         var autoTime = localStorage.getItem(storageKey);
         console.log(getNowTime() - parseInt(autoTime))
         if (autoTime) {
-            return getNowTime() - parseInt(autoTime) < 180000;
+            return getNowTime() - parseInt(autoTime) < AUTO_CONTINUATION * 60 * 1000;
         }
         return false;
     }
