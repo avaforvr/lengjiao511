@@ -292,15 +292,21 @@
         },
         blogger: function () {
             // 博主
-            return document.querySelector('.weibo-top .m-text-cut');
+            return isMSinglePage
+                ? document.querySelector('.weibo-top .m-text-cut')
+                : document.querySelector('.head_name_24eEB>span');
         },
         weiboText: function () {
             //微博正文容器
-            return document.querySelector('.weibo-main .weibo-text');
+            return isMSinglePage
+                ? document.querySelector('.weibo-main .weibo-text')
+                : document.querySelector('.detail_wbtext_4CRf9');
         },
         qtyBar: function () {
             //显示点赞评的工具栏
-            return document.querySelector('.lite-page-tab');
+            return isMSinglePage
+                ? document.querySelector('.lite-page-tab')
+                : document.querySelector('.toolbar_main_3Mxwo');
         },
         list: function () {
             //评论列表
@@ -511,7 +517,6 @@
 
     function isAutoComment () {
         var autoTime = localStorage.getItem(storageKey);
-        console.log(getNowTime() - parseInt(autoTime))
         if (autoTime) {
             return getNowTime() - parseInt(autoTime) < AUTO_CONTINUATION * 60 * 1000;
         }
