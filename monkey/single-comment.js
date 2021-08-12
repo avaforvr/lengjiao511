@@ -252,6 +252,7 @@
     // 全局数据
     var state = {
         qty: 0, // 当前评论总数
+        uniqueQty: 0,
         status: '待评', //当前状态 待评|已评|自己
         text: '', //新文案
         textList: null
@@ -358,6 +359,15 @@
                 }
             }
         }
+
+        var reviewers = [];
+        for (var i = 0; i < comments.length; i ++) {
+            var nameElem = comments[i].querySelector('.m-text-cut');
+            if (nameElem) {
+                reviewers.push(nameElem.innerText.trim());
+            }
+        }
+        state.uniqueQty = Array.from(new Set(reviewers)).length;
 
         // 生成评论文案
         state.textList = getTextList(pageElems.weiboText.innerText);
@@ -477,7 +487,7 @@
 
     // 更新浮层
     function updateFloat () {
-        floatElems.qty.innerText = state.qty;
+        floatElems.qty.innerText = state.qty + '|' + state.uniqueQty;
         floatElems.status.innerText = state.status;
         floatElems.copyInput.value = state.text;
         floatElems.copyBtn.title = state.text;

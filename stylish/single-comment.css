@@ -1,0 +1,21 @@
+.lite-page-tab {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    padding: 10px;
+    border: solid 4px #000;
+    height: auto;
+    text-align: center;
+    line-height: 1.8;
+}
+.lite-page-tab .tab-item {
+	display: block;
+    margin-right: 0;
+}
+.lite-page-tab .tab-item i:first-child {
+    display: none;
+}
+.lite-page-tab .cur {
+    color:#000;
+    font-size: 36px
+}
